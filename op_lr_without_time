@@ -1,0 +1,178 @@
+> #using the data 
+> dd<- read.csv(file.choose())
+> #preping the data for modelling
+> str(dd)
+'data.frame':	2334 obs. of  6 variables:
+ $ Location: Factor w/ 10 levels "Basin","Bed",..: 8 4 4 4 4 8 4 4 4 1 ...
+ $ Type    : Factor w/ 5 levels "Electric","Flush",..: 5 4 4 4 4 5 4 4 4 4 ...
+ $ Place   : Factor w/ 5 levels "Bathroom","Bedroom",..: 5 5 4 4 5 5 5 2 2 1 ...
+ $ Duration: num  187.467 0.033 0.05 0.033 0.2 ...
+ $ Day     : Factor w/ 7 levels "Fri","Mon","Sat",..: 4 2 2 2 2 2 2 2 2 2 ...
+ $ obj     : Factor w/ 12 levels "Bathroom Basin",..: 12 11 8 8 11 12 11 5 5 1 ...
+> #options()
+> #validation of the data using kfold 
+> library(caret)
+> x<-dd[,-4]
+> y<-dd[,4]
+> #control <- trainControl(method = "repeatedcv" , number = 10, repeats = 5 ,search = "grid")
+> # Fit lm model using 10-fold CV: model
+> library(Matrix)
+> a<-model.matrix(~.,dd)
+> model <- train(
++   Duration ~ ., a,
++   method = "lm",
++   trControl = trainControl(
++     method = "cv", number = 10,
++     verboseIter = TRUE
++   )
++ )
++ Fold01: intercept=TRUE 
+- Fold01: intercept=TRUE 
++ Fold02: intercept=TRUE 
+- Fold02: intercept=TRUE 
++ Fold03: intercept=TRUE 
+- Fold03: intercept=TRUE 
++ Fold04: intercept=TRUE 
+- Fold04: intercept=TRUE 
++ Fold05: intercept=TRUE 
+- Fold05: intercept=TRUE 
++ Fold06: intercept=TRUE 
+- Fold06: intercept=TRUE 
++ Fold07: intercept=TRUE 
+- Fold07: intercept=TRUE 
++ Fold08: intercept=TRUE 
+- Fold08: intercept=TRUE 
++ Fold09: intercept=TRUE 
+- Fold09: intercept=TRUE 
++ Fold10: intercept=TRUE 
+- Fold10: intercept=TRUE 
+Aggregating results
+Fitting final model on full training set
+Warning messages:
+1: In predict.lm(modelFit, newdata) :
+  prediction from a rank-deficient fit may be misleading
+2: In predict.lm(modelFit, newdata) :
+  prediction from a rank-deficient fit may be misleading
+3: In predict.lm(modelFit, newdata) :
+  prediction from a rank-deficient fit may be misleading
+4: In predict.lm(modelFit, newdata) :
+  prediction from a rank-deficient fit may be misleading
+5: In predict.lm(modelFit, newdata) :
+  prediction from a rank-deficient fit may be misleading
+6: In predict.lm(modelFit, newdata) :
+  prediction from a rank-deficient fit may be misleading
+7: In predict.lm(modelFit, newdata) :
+  prediction from a rank-deficient fit may be misleading
+8: In predict.lm(modelFit, newdata) :
+  prediction from a rank-deficient fit may be misleading
+9: In predict.lm(modelFit, newdata) :
+  prediction from a rank-deficient fit may be misleading
+10: In predict.lm(modelFit, newdata) :
+  prediction from a rank-deficient fit may be misleading
+> print(model)
+Linear Regression 
+
+2334 samples
+  35 predictor
+
+No pre-processing
+Resampling: Cross-Validated (10 fold) 
+Summary of sample sizes: 2101, 2101, 2101, 2101, 2099, 2102, ... 
+Resampling results:
+
+  RMSE  Rsquared  MAE 
+  27    0.717     6.07
+
+Tuning parameter 'intercept' was held constant at a value of TRUE
+> #spliting the data into test and train 
+> require(caTools)
+> set.seed(101)
+> sample = sample.split(dd, SplitRatio = .75)
+> train = subset(dd, sample == TRUE)
+> test  = subset(dd, sample == FALSE)
+> #linear regression model 
+> model_lr <- lm(Duration~.,train )
+> print(model_lr)
+
+Call:
+lm(formula = Duration ~ ., data = train)
+
+Coefficients:
+         (Intercept)           LocationBed      LocationCupboard          LocationDoor        LocationFridge  
+               8.054               335.300                -2.043                -2.240                -1.613  
+    LocationMaindoor     LocationMicrowave          LocationSeat        LocationShower        LocationToilet  
+              -2.567                -0.729                71.192                 1.108                -0.998  
+           TypeFlush          TypeMagnetic               TypePIR          TypePressure          PlaceBedroom  
+                  NA                    NA                    NA                    NA                -0.336  
+       PlaceEntrance          PlaceKitchen           PlaceLiving                DayMon                DaySat  
+                  NA                -0.264                    NA                -4.781                -4.373  
+              DaySun                DayThu                DayTue                DayWed    objBathroom Shower  
+              -5.430               -11.073                -5.098                -7.935                    NA  
+  objBathroom Toilet        objBedroom Bed       objBedroom Door  objEntrance Maindoor   objKitchen Cupboard  
+                  NA                    NA                    NA                    NA                    NA  
+     objKitchen Door     objKitchen Fridge  objKitchen Microwave        objLiving Door        objLiving Seat  
+                  NA                    NA                    NA                    NA                    NA  
+
+> summary(model_lr)
+
+Call:
+lm(formula = Duration ~ ., data = train)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-303.9   -1.3   -0.6    2.2  604.0 
+
+Coefficients: (17 not defined because of singularities)
+                     Estimate Std. Error t value Pr(>|t|)    
+(Intercept)             8.054      3.742    2.15   0.0315 *  
+LocationBed           335.300      7.845   42.74  < 2e-16 ***
+LocationCupboard       -2.043      8.864   -0.23   0.8177    
+LocationDoor           -2.240      3.452   -0.65   0.5165    
+LocationFridge         -1.613      5.062   -0.32   0.7500    
+LocationMaindoor       -2.567      5.238   -0.49   0.6241    
+LocationMicrowave      -0.729      8.594   -0.08   0.9324    
+LocationSeat           71.192      4.594   15.50  < 2e-16 ***
+LocationShower          1.108     13.313    0.08   0.9337    
+LocationToilet         -0.998      5.058   -0.20   0.8436    
+TypeFlush                  NA         NA      NA       NA    
+TypeMagnetic               NA         NA      NA       NA    
+TypePIR                    NA         NA      NA       NA    
+TypePressure               NA         NA      NA       NA    
+PlaceBedroom           -0.336      2.193   -0.15   0.8783    
+PlaceEntrance              NA         NA      NA       NA    
+PlaceKitchen           -0.264      1.948   -0.14   0.8922    
+PlaceLiving                NA         NA      NA       NA    
+DayMon                 -4.781      2.773   -1.72   0.0849 .  
+DaySat                 -4.373      2.704   -1.62   0.1060    
+DaySun                 -5.430      2.768   -1.96   0.0499 *  
+DayThu                -11.073      2.804   -3.95  8.2e-05 ***
+DayTue                 -5.098      2.832   -1.80   0.0720 .  
+DayWed                 -7.935      2.762   -2.87   0.0041 ** 
+objBathroom Shower         NA         NA      NA       NA    
+objBathroom Toilet         NA         NA      NA       NA    
+objBedroom Bed             NA         NA      NA       NA    
+objBedroom Door            NA         NA      NA       NA    
+objEntrance Maindoor       NA         NA      NA       NA    
+objKitchen Cupboard        NA         NA      NA       NA    
+objKitchen Door            NA         NA      NA       NA    
+objKitchen Fridge          NA         NA      NA       NA    
+objKitchen Microwave       NA         NA      NA       NA    
+objLiving Door             NA         NA      NA       NA    
+objLiving Seat             NA         NA      NA       NA    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 28.8 on 1538 degrees of freedom
+Multiple R-squared:  0.651,	Adjusted R-squared:  0.647 
+F-statistic:  169 on 17 and 1538 DF,  p-value: <2e-16
+
+> #predicting the values for the test data set
+> test$pred_duration<-predict(model_lr,test)
+Warning message:
+In predict.lm(model_lr, test) :
+  prediction from a rank-deficient fit may be misleading
+> #finding RMSE
+> a<-(test$Duration-test$pred_duration)^2
+> a<-sqrt(mean(a))
+> print(a)
+[1] 26.4
