@@ -1,0 +1,50 @@
+#Importing the data set 
+df<- read.csv(file.choose(),na.strings = "NA",header = T)
+
+#for calculating time from start of the day
+df$day_start <- df$Start
+hour(df$day_start)<- 0
+minute(df$day_start)<- 0
+second(df$day_start)<- 0
+
+# joining start date and start time
+#df$Start <- paste(df$Start,df$Time_Start)
+#joining end date and time
+#df$End<- paste(df$End,df$Time_End)
+#dropping  start time and end time
+df<- subset(df, select = -c(Time_End))
+
+#finding the class of the time
+class(df$Start)
+
+#converting the start and end to type time
+df$Start<-strptime(as.character(df$Start) , format = "%Y-%m-%d %H:%M:%S")
+df$End<-strptime(as.character(df$End) , format = "%Y-%m-%d  %H:%M:%S")
+df$day_start<-strptime(as.character(df$day_start) , format = "%Y-%m-%d  %H:%M:%S")
+class(df$Start)
+
+#Finding the duration from the start time and end time
+df$Duration <- abs(difftime(df$Start,df$End , units = "mins" ))
+df$Duration <- round(df$Duration, digits = 3)
+df$Start_time_mins <- round(abs(difftime(df$Start,df$day_start , units = "mins" )),digits = 3)
+#finding the day when the sensor was triggered
+df$Day <- format(as.Date(df$Start,format="%Y-%m-%d"), "%a")
+
+#finding the object for which the sensor was triggered
+#df$obj <- paste(df$Place,df$Location , sep = " ")
+
+#library(lubridate)
+#dd<-df
+#x<-dd$Start
+#year(dd$Start)<-2018
+ #month(dd$Start)<-ifelse(month(dd$Start)==11,1,2)
+
+#year(dd$End)<-2018
+#month(dd$End)<-ifelse(month(dd$End)==11,1,2)
+#dd$Duration <- abs(difftime(dd$Start,dd$End , units = "mins" ))
+#dd$Duration <- round(dd$Duration, digits = 3)
+#dd<- subset(dd,select = c(Start,End,Location,Place))
+
+dd<- subset(df,select = c(Location,Place,Duration,Start_time_mins,Day))
+write.csv(dd,"C:\\Users\\prasr\\Desktop\\final sem project\\UCI ADL Binary Dataset\\data_to_show_prelim.csv",row.names = FALSE)
+
