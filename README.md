@@ -1,2 +1,2 @@
-# dynamic sensors timeouts for home automation using Machine Learning
+# Dynamic Sensors Timeouts for Home Automation using Machine Learning
 Built as a capstone project.
